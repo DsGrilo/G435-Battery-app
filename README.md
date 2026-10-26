@@ -11,9 +11,33 @@ Windows tray icon that shows the battery level of the **Logitech G435 LIGHTSPEED
 | G435 LIGHTSPEED (newer revision) | `046D:0ADF` | Holtek | ✅ tested (bridge firmware `V1.8.5.1`) |
 | G435 LIGHTSPEED (original) | `046D:0ACB` | Realtek | ❌ different protocol, not supported |
 
-To check which one you have: Device Manager → *Sound, video and game controllers* → *G435 Wireless Gaming Headset* → Properties → Details → Hardware IDs. Look for `PID_0ADF`.
+### Is my receiver compatible?
 
-If you have the `0ACB` receiver, or another firmware version, an issue with your IDs is welcome, but the app will not try to talk to it.
+Plug in the receiver and use one of these.
+
+**Without installing anything (PowerShell):**
+
+```powershell
+Get-PnpDevice -PresentOnly | Where-Object InstanceId -match 'VID_046D&PID_0A(DF|CB)' | Select-Object -First 1 InstanceId
+```
+
+- `PID_0ADF` in the result → **compatible**.
+- `PID_0ACB` → original receiver, **not supported**.
+- Nothing → the receiver was not found (is it plugged in?).
+
+The same ID is in Device Manager → *Sound, video and game controllers* → *G435 Wireless Gaming Headset* → Properties → Details → Hardware IDs.
+
+**With the check script** (after the [install](#install) step):
+
+```
+python check.py
+```
+
+```
+COMPATIBLE: receiver 046D:0ADF (Holtek bridge), firmware V1.8.5.1.
+```
+
+It only lists USB devices and, on a compatible receiver, reads the bridge firmware version. It never switches modes or sends anything else. If your firmware differs from `V1.8.5.1` it should still work; if it doesn't, please open an issue with the script output.
 
 ## What it does
 
@@ -79,6 +103,7 @@ This project is not affiliated with or endorsed by Logitech. Logitech, G435 and 
 Ícone na bandeja do Windows com a bateria do **Logitech G435 LIGHTSPEED**, que o G HUB não suporta.
 
 - Funciona com o receptor **`046D:0ADF`** (ponte Holtek). O receptor original `046D:0ACB` (Realtek) **não** é suportado.
+- Para saber qual é o seu: rode o comando de PowerShell da seção [Is my receiver compatible?](#is-my-receiver-compatible) (`PID_0ADF` = compatível) ou `python check.py`.
 - Pergunta a tensão da bateria ao fone a cada 5 minutos; a tensão é exata, a porcentagem é estimada.
 - Instalação: `pip install -r requirements.txt` e `pythonw g435_tray.py`. Clique direito no ícone para iniciar com o Windows.
 - O app só usa comandos de leitura e não grava nada na memória do dongle. A ponte também aceita comandos perigosos (modo DFU, troca de VID/PID): se for alterar o código, não mande comandos que você não identificou.
